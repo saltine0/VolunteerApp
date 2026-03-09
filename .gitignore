@@ -1,0 +1,11 @@
+# Maven build output
+target/
+
+# IDE and local tool config (contains Auth0 credentials)
+.claude/
+
+# Runtime-generated email config (may contain SMTP password)
+src/main/resources/data/email-config.json
+
+# macOS
+.DS_Store
