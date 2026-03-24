@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Sign-Up Sheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+        :root {
+            --cream: #F6F1EB;
+            --warm-white: #FFFDF9;
+            --terracotta: #C2593B;
+            --terracotta-light: #D4775E;
+            --terracotta-dark: #A14428;
+            --sage: #5B7B6A;
+            --sage-light: #E8F0EB;
+            --sage-muted: #93AE9F;
+            --charcoal: #2C2420;
+            --warm-gray: #8A7E76;
+            --light-gray: #E8E2DA;
+            --danger: #B8443A;
+            --danger-light: #FCEAE8;
+            --gold: #C7A94F;
+            --gold-light: #FBF6E8;
+            --shadow-sm: 0 1px 3px rgba(44,36,32,0.06);
+            --shadow-md: 0 4px 16px rgba(44,36,32,0.08);
+            --shadow-lg: 0 8px 32px rgba(44,36,32,0.1);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --font-display: 'Instrument Serif', Georgia, serif;
+            --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--cream);
+            color: var(--charcoal);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 20% 0%, rgba(194,89,59,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(91,123,106,0.05) 0%, transparent 50%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.3;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            z-index: 9999;
+        }
+
+        .page-wrapper { max-width: 920px; margin: 0 auto; padding: 48px 24px 80px; }
+
+        /* ── Header ── */
+        .page-header { text-align: center; margin-bottom: 48px; animation: fadeUp 0.6s ease-out both; }
+        .page-header__label { font-family: var(--font-body); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 12px; display: block; }
+        .page-header__title { font-family: var(--font-display); font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 400; line-height: 1.1; color: var(--charcoal); }
+        .page-header__title em { font-style: italic; color: var(--terracotta); }
+        .page-header__rule { width: 48px; height: 2px; background: var(--terracotta); border: none; margin: 20px auto 0; border-radius: 1px; }
+        .page-header__stats { margin-top: 16px; font-size: 0.82rem; color: var(--warm-gray); }
+        .page-header__stat-value { font-weight: 700; color: var(--charcoal); }
+        .page-header__stat-sep { display: inline-block; width: 4px; height: 4px; background: var(--light-gray); border-radius: 50%; margin: 0 10px; vertical-align: middle; }
+
+        /* ── Flash messages ── */
+        .flash { padding: 14px 20px; border-radius: var(--radius-sm); margin-bottom: 24px; font-size: 0.88rem; font-weight: 500; display: flex; align-items: center; justify-content: space-between; animation: slideDown 0.35s ease-out both; }
+        .flash--success { background: var(--sage-light); color: var(--sage); border: 1px solid rgba(91,123,106,0.2); }
+        .flash--error { background: var(--danger-light); color: var(--danger); border: 1px solid rgba(184,68,58,0.2); }
+        .flash__close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: inherit; opacity: 0.6; padding: 0 0 0 16px; line-height: 1; transition: opacity 0.2s; }
+        .flash__close:hover { opacity: 1; }
+
+        /* ── Add Task Panel ── */
+        .add-panel { background: var(--warm-white); border: 1px solid var(--light-gray); border-radius: var(--radius); margin-bottom: 40px; overflow: hidden; box-shadow: var(--shadow-sm); animation: fadeUp 0.6s ease-out 0.1s both; }
+        .add-panel__toggle { width: 100%; padding: 18px 24px; background: none; border: none; font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; color: var(--terracotta); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s; }
+        .add-panel__toggle:hover { background: rgba(194,89,59,0.04); }
+        .add-panel__toggle-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--terracotta); color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1; transition: transform 0.3s ease; }
+        .add-panel[data-open="true"] .add-panel__toggle-icon { transform: rotate(45deg); }
+        .add-panel__body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease; }
+        .add-panel[data-open="true"] .add-panel__body { max-height: 600px; padding: 0 24px 24px; }
+        .email-panel[data-open="true"] .add-panel__body { max-height: 900px; }
+        .form-section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 12px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 500; color: var(--charcoal); cursor: pointer; }
+
+        /* ── Form elements ── */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; }
+        .form-field--span2 { grid-column: span 2; }
+        .form-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); }
+        .form-label .req { color: var(--terracotta); }
+        .form-input, .form-select { font-family: var(--font-body); font-size: 0.88rem; padding: 10px 14px; border: 1px solid var(--light-gray); border-radius: var(--radius-sm); background: var(--cream); color: var(--charcoal); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+        .form-input::placeholder { color: var(--warm-gray); opacity: 0.6; }
+        .form-input:focus, .form-select:focus { border-color: var(--terracotta-light); box-shadow: 0 0 0 3px rgba(194,89,59,0.1); }
+        .form-hint { font-size: 0.72rem; color: var(--warm-gray); margin-top: -2px; }
+        .form-actions { margin-top: 20px; display: flex; align-items: center; gap: 12px; }
+
+        /* ── Buttons ── */
+        .btn { font-family: var(--font-body); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.02em; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; }
+        .btn--primary { background: var(--terracotta); color: white; padding: 11px 24px; }
+        .btn--primary:hover { background: var(--terracotta-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn--signup { background: var(--sage); color: white; padding: 9px 18px; font-size: 0.78rem; }
+        .btn--signup:hover { background: #4E6D5C; transform: translateY(-1px); }
+        .btn--ghost { background: none; color: var(--warm-gray); padding: 6px 10px; border: 1px solid transparent; font-size: 0.82rem; }
+        .btn--ghost:hover { background: var(--danger-light); color: var(--danger); border-color: rgba(184,68,58,0.15); }
+        .btn--remove-task { background: none; border: none; color: var(--warm-gray); padding: 4px 8px; font-size: 1rem; cursor: pointer; border-radius: 6px; transition: all 0.2s; line-height: 1; }
+        .btn--remove-task:hover { background: var(--danger-light); color: var(--danger); }
+        .btn--edit-task { background: none; border: none; color: var(--warm-gray); padding: 4px 8px; font-size: 0.88rem; cursor: pointer; border-radius: 6px; transition: all 0.2s; line-height: 1; }
+        .btn--edit-task:hover { background: var(--gold-light); color: var(--gold); }
+        .btn--outline { background: none; color: var(--terracotta); padding: 9px 18px; border: 1px solid var(--terracotta); font-size: 0.82rem; }
+        .btn--outline:hover { background: rgba(194,89,59,0.06); }
+
+        /* ── Filter bar ── */
+        .filter-bar { background: var(--warm-white); border: 1px solid var(--light-gray); border-radius: var(--radius); padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow-sm); animation: fadeUp 0.6s ease-out 0.15s both; }
+        .filter-bar .form-field { gap: 4px; }
+        .filter-bar .form-input { padding: 8px 12px; font-size: 0.82rem; }
+        .filter-bar .form-label { font-size: 0.66rem; }
+        .filter-bar__actions { display: flex; align-items: center; gap: 10px; padding-bottom: 1px; }
+        .filter-bar__clear { font-size: 0.78rem; color: var(--warm-gray); text-decoration: none; transition: color 0.2s; }
+        .filter-bar__clear:hover { color: var(--danger); }
+
+        /* ── Section title ── */
+        .section-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; animation: fadeUp 0.6s ease-out 0.2s both; }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--light-gray); }
+
+        /* ── Task cards ── */
+        .task-list { display: flex; flex-direction: column; gap: 16px; }
+        .task-card { background: var(--warm-white); border: 1px solid var(--light-gray); border-radius: var(--radius); overflow: visible; box-shadow: var(--shadow-sm); transition: box-shadow 0.3s ease, transform 0.3s ease; animation: fadeUp 0.5s ease-out both; }
+        .task-card[data-recurring="true"] { border-left: 3px solid var(--terracotta-light); }
+        .task-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .task-card.date-picker-elevated { z-index: 200; position: relative; }
+        .task-card:nth-child(1) { animation-delay: 0.25s; }
+        .task-card:nth-child(2) { animation-delay: 0.35s; }
+        .task-card:nth-child(3) { animation-delay: 0.45s; }
+        .task-card:nth-child(4) { animation-delay: 0.55s; }
+        .task-card:nth-child(5) { animation-delay: 0.65s; }
+        .task-card__header { padding: 20px 24px 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+        .task-card__info { flex: 1; min-width: 0; }
+        .task-card__name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 400; line-height: 1.25; margin-bottom: 12px; }
+        .task-card__actions { display: flex; align-items: center; gap: 4px; }
+
+        /* ── Recurring banner ── */
+        .recurring-banner { padding: 10px 24px; background: linear-gradient(135deg, rgba(194,89,59,0.08), rgba(212,119,94,0.12)); border-top: 1px solid rgba(194,89,59,0.12); border-bottom: 1px solid rgba(194,89,59,0.12); display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; color: var(--terracotta); }
+        .recurring-banner__icon { font-size: 1rem; line-height: 1; }
+        .recurring-banner__count { font-weight: 700; background: rgba(194,89,59,0.12); padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; }
+
+        /* ── Task detail fields ── */
+        .task-details { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px 24px; padding: 0 24px 16px; }
+        .task-detail { display: flex; flex-direction: column; gap: 2px; }
+        .task-detail__label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); }
+        .task-detail__value { font-size: 0.9rem; font-weight: 500; color: var(--charcoal); }
+        .task-detail__value--empty { color: var(--light-gray); font-style: italic; font-weight: 400; }
+
+        /* ── Badges ── */
+        .badges { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 24px 16px; }
+        .badge { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 12px; border-radius: 20px; }
+        .badge--count { background: var(--gold-light); color: var(--gold); border: 1px solid rgba(199,169,79,0.2); }
+        .badge--spots { background: var(--sage-light); color: var(--sage); border: 1px solid rgba(91,123,106,0.2); }
+        .badge--full { background: var(--danger-light); color: var(--danger); border: 1px solid rgba(184,68,58,0.2); }
+        .badge--unlimited { background: rgba(138,126,118,0.08); color: var(--warm-gray); border: 1px solid rgba(138,126,118,0.12); }
+        .badge--recurring { background: rgba(194,89,59,0.08); color: var(--terracotta); border: 1px solid rgba(194,89,59,0.18); }
+
+        /* ── Sign-up form row ── */
+        .signup-row { padding: 16px 24px; background: linear-gradient(to right, rgba(91,123,106,0.03), rgba(91,123,106,0.06)); border-top: 1px solid var(--light-gray); display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+        .signup-row .form-field { gap: 4px; }
+        .signup-row .form-input { padding: 8px 12px; font-size: 0.82rem; background: var(--warm-white); }
+        .signup-row .form-label { font-size: 0.66rem; }
+        .signup-row--recurring { flex-direction: column; align-items: stretch; }
+        .signup-row--recurring .signup-row__fields { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+        .signup-row--recurring .form-select-multi { font-family: var(--font-body); font-size: 0.82rem; padding: 6px 10px; border: 1px solid var(--light-gray); border-radius: var(--radius-sm); background: var(--warm-white); color: var(--charcoal); width: 100%; min-height: 80px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .signup-row--recurring .form-select-multi:focus { border-color: var(--terracotta-light); box-shadow: 0 0 0 3px rgba(194,89,59,0.1); }
+        .signup-row--recurring .form-select-multi option { padding: 4px 8px; }
+        .signup-row--recurring .form-select-multi option:checked { background: rgba(91,123,106,0.15); color: var(--charcoal); }
+
+        /* ── Occurrence date picker ── */
+        .date-picker-wrapper { position: relative; margin-top: 4px; }
+        .date-picker-toggle { font-family: var(--font-body); font-size: 0.84rem; font-weight: 500; padding: 10px 14px; border: 1px solid var(--light-gray); border-radius: var(--radius-sm); background: var(--warm-white); color: var(--charcoal); cursor: pointer; display: flex; align-items: center; gap: 10px; width: 100%; transition: border-color 0.2s, box-shadow 0.2s; }
+        .date-picker-toggle:hover, .date-picker-wrapper[data-open="true"] .date-picker-toggle { border-color: var(--sage-muted); box-shadow: 0 0 0 3px rgba(91,123,106,0.08); }
+        .date-picker-toggle__icon { font-size: 1rem; line-height: 1; opacity: 0.5; }
+        .date-picker-toggle__text { flex: 1; text-align: left; }
+        .date-picker-toggle__count { font-weight: 700; color: var(--sage); font-size: 0.72rem; background: var(--sage-light); padding: 3px 10px; border-radius: 10px; border: 1px solid rgba(91,123,106,0.15); }
+        .date-picker-toggle__arrow { font-size: 0.6rem; color: var(--warm-gray); transition: transform 0.25s ease; }
+        .date-picker-wrapper[data-open="true"] .date-picker-toggle__arrow { transform: rotate(180deg); }
+        .date-picker-dropdown { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 100; background: var(--warm-white); border: 1px solid var(--light-gray); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; animation: slideDown 0.2s ease-out; }
+        .date-picker-wrapper[data-open="true"] .date-picker-dropdown { display: block; }
+        .date-picker-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--light-gray); background: var(--cream); }
+        .date-picker-toolbar__label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); }
+        .date-picker-toolbar__actions { display: flex; gap: 6px; }
+        .date-picker-toolbar__btn { font-family: var(--font-body); font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--light-gray); background: var(--warm-white); color: var(--charcoal); cursor: pointer; transition: all 0.15s; }
+        .date-picker-toolbar__btn:hover { border-color: var(--sage); background: var(--sage-light); color: var(--sage); }
+        .date-picker-list { max-height: 400px; overflow-y: auto; padding: 4px 0; }
+        .date-picker-list::-webkit-scrollbar { width: 6px; }
+        .date-picker-list::-webkit-scrollbar-track { background: transparent; }
+        .date-picker-list::-webkit-scrollbar-thumb { background: var(--light-gray); border-radius: 3px; }
+        .date-picker-item { display: flex; align-items: center; gap: 12px; padding: 9px 14px; cursor: pointer; transition: background 0.15s; user-select: none; border-left: 3px solid transparent; }
+        .date-picker-item:hover { background: rgba(91,123,106,0.04); }
+        .date-picker-item--selected { background: var(--sage-light); border-left-color: var(--sage); }
+        .date-picker-item--selected:hover { background: rgba(91,123,106,0.12); }
+        .date-picker-item--disabled { opacity: 0.4; pointer-events: none; background: rgba(138,126,118,0.04); }
+        .date-picker-item__check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--light-gray); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; background: var(--warm-white); }
+        .date-picker-item--selected .date-picker-item__check { background: var(--sage); border-color: var(--sage); }
+        .date-picker-item__check-icon { display: none; width: 10px; height: 10px; color: white; }
+        .date-picker-item--selected .date-picker-item__check-icon { display: block; }
+        .date-picker-item__info { flex: 1; min-width: 0; }
+        .date-picker-item__week { font-size: 0.72rem; font-weight: 700; color: var(--terracotta); letter-spacing: 0.03em; }
+        .date-picker-item__date { font-size: 0.82rem; font-weight: 500; color: var(--charcoal); }
+        .date-picker-item__time { font-size: 0.72rem; color: var(--warm-gray); margin-left: 4px; }
+        .date-picker-item--disabled .date-picker-item__signed { font-size: 0.68rem; font-weight: 600; color: var(--warm-gray); background: rgba(138,126,118,0.08); padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
+        .date-picker-item input[type="checkbox"] { display: none; }
+
+        /* ── Volunteer occurrence badges ── */
+        .vol-item__weeks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+        .vol-item__week-badge { font-size: 0.64rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: rgba(194,89,59,0.08); color: var(--terracotta); border: 1px solid rgba(194,89,59,0.15); white-space: nowrap; }
+
+        /* ── Full banner ── */
+        .full-banner { padding: 14px 24px; background: linear-gradient(to right, rgba(184,68,58,0.04), rgba(184,68,58,0.08)); border-top: 1px solid rgba(184,68,58,0.1); text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--danger); letter-spacing: 0.04em; }
+
+        /* ── Volunteer list (collapsible) ── */
+        .vol-list { padding: 0 24px 20px; }
+        .vol-list__toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 0 8px; border: none; border-top: 1px solid var(--light-gray); background: none; cursor: pointer; font-family: var(--font-body); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm-gray); transition: color 0.2s; }
+        .vol-list__toggle:hover { color: var(--charcoal); }
+        .vol-list__chevron { transition: transform 0.25s ease; width: 12px; height: 12px; }
+        .vol-list__toggle[aria-expanded="true"] .vol-list__chevron { transform: rotate(180deg); }
+        .vol-list__items { overflow: hidden; max-height: 0; transition: max-height 0.35s ease; }
+        .vol-list__items[data-open="true"] { max-height: 600px; }
+        .vol-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(232,226,218,0.8); }
+        .vol-item:last-child { border-bottom: none; }
+        .vol-item__info { display: flex; align-items: baseline; gap: 8px; }
+        .vol-item__name { font-weight: 600; font-size: 0.88rem; }
+        .vol-item__email { font-size: 0.78rem; color: var(--warm-gray); }
+
+        /* ── Edit Modal ── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(44,36,32,0.4); z-index: 10000; align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--warm-white); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 100%; max-width: 540px; margin: 24px; overflow: hidden; animation: slideUp 0.3s ease-out; }
+        .modal__header { padding: 20px 24px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--light-gray); }
+        .modal__title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 400; }
+        .modal__close { background: none; border: none; font-size: 1.4rem; color: var(--warm-gray); cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; line-height: 1; }
+        .modal__close:hover { background: var(--danger-light); color: var(--danger); }
+        .modal__body { padding: 24px; }
+        .modal__actions { padding: 16px 24px; border-top: 1px solid var(--light-gray); display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* ── Empty state ── */
+        .empty-state { text-align: center; padding: 64px 24px; color: var(--warm-gray); animation: fadeUp 0.6s ease-out 0.3s both; }
+        .empty-state__icon { font-size: 2.4rem; margin-bottom: 12px; opacity: 0.4; }
+        .empty-state__text { font-family: var(--font-display); font-size: 1.2rem; font-style: italic; }
+
+        /* ── Animations ── */
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .page-wrapper { padding: 32px 16px 60px; }
+            .task-card__header { padding: 16px 16px 12px; }
+            .task-details { padding: 0 16px 12px; grid-template-columns: 1fr 1fr; }
+            .badges { padding: 0 16px 12px; }
+            .signup-row { padding: 12px 16px; flex-direction: column; align-items: stretch; }
+            .signup-row .form-field { width: 100%; }
+            .vol-list { padding: 0 16px 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-field--span2 { grid-column: span 1; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .recurring-banner { padding: 10px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- Auth bar -->
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-bottom:12px;font-size:0.82rem;">
+        <% if (!user) { %>
+        <a href="/login" class="btn btn--outline" style="padding:7px 16px;font-size:0.78rem;">Admin Login</a>
+        <% } else { %>
+        <span style="display:flex;align-items:center;gap:10px;">
+            <span style="color:var(--warm-gray);">Logged in as <strong><%= userName %></strong></span>
+            <a href="/logout" class="btn btn--outline" style="padding:7px 16px;font-size:0.78rem;">Logout</a>
+        </span>
+        <% } %>
+    </div>
+
+    <!-- Header -->
+    <header class="page-header">
+        <span class="page-header__label">Community Coordination</span>
+        <h1 class="page-header__title">Volunteer <em>Sign-Up</em> Sheet</h1>
+        <hr class="page-header__rule">
+        <% if (taskItems.length > 0) { %>
+        <div class="page-header__stats">
+            <span class="page-header__stat-value"><%= totalVolunteers %></span> volunteers across
+            <span class="page-header__stat-value"><%= taskCount %></span> tasks
+        </div>
+        <% } %>
+    </header>
+
+    <!-- Flash messages -->
+    <% if (message) { %>
+    <div class="flash flash--success">
+        <span><%= message %></span>
+        <button class="flash__close" onclick="this.parentElement.remove()" type="button">&times;</button>
+    </div>
+    <% } %>
+    <% if (error) { %>
+    <div class="flash flash--error">
+        <span><%= error %></span>
+        <button class="flash__close" onclick="this.parentElement.remove()" type="button">&times;</button>
+    </div>
+    <% } %>
+
+    <!-- Add Task Panel (admin only) -->
+    <% if (user) { %>
+    <div class="add-panel" id="addPanel" data-open="false">
+        <button class="add-panel__toggle" type="button" onclick="togglePanel()">
+            <span class="add-panel__toggle-icon">+</span>
+            Add a New Task
+        </button>
+        <div class="add-panel__body">
+            <form action="/tasks/add" method="post" onsubmit="return validateTaskForm(this)">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="form-grid">
+                    <div class="form-field form-field--span2">
+                        <label class="form-label" for="taskName">Task Name <span class="req">*</span></label>
+                        <input class="form-input" type="text" id="taskName" name="name" placeholder="e.g. Registration Desk" required>
+                    </div>
+                    <div class="form-field form-field--span2">
+                        <label class="form-label" for="personAssisting">Person Assisting</label>
+                        <input class="form-input" type="text" id="personAssisting" name="personAssisting" placeholder="Lead volunteer name">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="date">Date</label>
+                        <input class="form-input" type="date" id="date" name="date">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="startTime">Start Time</label>
+                        <input class="form-input" type="time" id="startTime" name="startTime">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="endTime">End Time</label>
+                        <input class="form-input" type="time" id="endTime" name="endTime">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="maxVolunteers">Max Volunteers</label>
+                        <input class="form-input" type="number" id="maxVolunteers" name="maxVolunteers" min="0" value="0">
+                        <span class="form-hint">0 = unlimited spots</span>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="recurrenceType">Recurrence</label>
+                        <select class="form-select" id="recurrenceType" name="recurrenceType" onchange="toggleRecurrenceFields()">
+                            <option value="NONE">None</option>
+                            <option value="DAILY">Daily</option>
+                            <option value="WEEKLY">Weekly</option>
+                            <option value="BIWEEKLY">Biweekly</option>
+                            <option value="MONTHLY">Monthly</option>
+                        </select>
+                    </div>
+                    <div class="form-field" id="recurrenceEndDateField" style="display:none">
+                        <label class="form-label" for="recurrenceEndDate">Repeat Until <span class="req">*</span></label>
+                        <input class="form-input" type="date" id="recurrenceEndDate" name="recurrenceEndDate">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn--primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Email Reminder Settings (admin only) -->
+    <div class="add-panel email-panel" id="emailPanel" data-open="false">
+        <button class="add-panel__toggle" type="button" onclick="toggleEmailPanel()">
+            <span class="add-panel__toggle-icon">&#9993;</span>
+            Email Reminder Settings
+        </button>
+        <div class="add-panel__body">
+            <div style="padding:24px 0">
+                <form action="/email/config/save" method="post">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <p class="form-section-label">SMTP Server</p>
+                    <div class="form-grid">
+                        <div class="form-field form-field--span2">
+                            <label class="form-label" for="smtpHost">SMTP Host</label>
+                            <input class="form-input" type="text" id="smtpHost" name="smtpHost"
+                                   placeholder="smtp.gmail.com" value="<%= emailConfig.smtpHost || '' %>">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="smtpPort">Port</label>
+                            <input class="form-input" type="number" id="smtpPort" name="smtpPort"
+                                   value="<%= emailConfig.smtpPort %>">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="fromAddress">From Address</label>
+                            <input class="form-input" type="email" id="fromAddress" name="fromAddress"
+                                   placeholder="reminders@myorg.com" value="<%= emailConfig.fromAddress || '' %>">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="smtpUsername">Username</label>
+                            <input class="form-input" type="text" id="smtpUsername" name="smtpUsername"
+                                   value="<%= emailConfig.smtpUsername || '' %>">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="smtpPassword">Password</label>
+                            <input class="form-input" type="password" id="smtpPassword" name="smtpPassword"
+                                   placeholder="Leave blank to keep current">
+                            <span class="form-hint">Stored in email-config.json</span>
+                        </div>
+                        <div class="form-field" style="justify-content:flex-end;padding-bottom:4px">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="tlsEnabled" value="true"
+                                       <%= emailConfig.tlsEnabled ? 'checked' : '' %>>
+                                Use STARTTLS
+                            </label>
+                            <span class="form-hint">Uncheck to use SSL (port 465)</span>
+                        </div>
+                    </div>
+                    <p class="form-section-label" style="margin-top:24px">Reminder Schedule</p>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label" for="daysBeforeReminder">Days Before Task</label>
+                            <input class="form-input" type="number" id="daysBeforeReminder" name="daysBeforeReminder"
+                                   min="1" max="30" value="<%= emailConfig.daysBeforeReminder %>">
+                            <span class="form-hint">Send reminder this many days in advance</span>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="reminderTime">Send Time</label>
+                            <input class="form-input" type="time" id="reminderTime" name="reminderTime"
+                                   value="<%= emailConfig.reminderTime || '08:00' %>">
+                        </div>
+                        <div class="form-field" style="justify-content:flex-end;padding-bottom:4px">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="enabled" value="true"
+                                       <%= emailConfig.enabled ? 'checked' : '' %>>
+                                Enable reminders
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary">Save Email Settings</button>
+                    </div>
+                </form>
+
+                <hr style="margin:24px 0;border:none;border-top:1px solid var(--light-gray)">
+
+                <p class="form-section-label">Test Configuration</p>
+                <form action="/email/test" method="post" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="form-field" style="flex:1;min-width:220px">
+                        <label class="form-label" for="testEmailAddress">Send Test Email To</label>
+                        <input class="form-input" type="email" id="testEmailAddress" name="testEmailAddress"
+                               placeholder="you@example.com">
+                    </div>
+                    <button type="submit" class="btn btn--outline" style="white-space:nowrap">Send Test</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Date Filter Bar -->
+    <div class="filter-bar">
+        <form action="/" method="get" style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;width:100%">
+            <div class="form-field">
+                <label class="form-label">From</label>
+                <input class="form-input" type="date" name="filterStartDate" value="<%= filterStartDate %>">
+            </div>
+            <div class="form-field">
+                <label class="form-label">To</label>
+                <input class="form-input" type="date" name="filterEndDate" value="<%= filterEndDate %>">
+            </div>
+            <div class="filter-bar__actions">
+                <button type="submit" class="btn btn--outline">Filter</button>
+                <a href="/" class="filter-bar__clear">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Task list -->
+    <% if (taskItems.length === 0) { %>
+    <div class="empty-state">
+        <div class="empty-state__icon">&#9758;</div>
+        <p class="empty-state__text">No tasks yet. Create one above to get started.</p>
+    </div>
+    <% } else { %>
+    <div class="section-label">Active Tasks</div>
+    <div class="task-list">
+        <% taskItems.forEach(function(taskItem) { %>
+        <div class="task-card" data-recurring="<%= taskItem.recurring %>">
+
+            <!-- Card header: name + edit/remove -->
+            <div class="task-card__header">
+                <div class="task-card__info">
+                    <h3 class="task-card__name"><%= taskItem.displayTask.name %></h3>
+                </div>
+                <% if (user) { %>
+                <div class="task-card__actions">
+                    <button type="button" class="btn--edit-task" title="Edit task"
+                            onclick="openEditModal(this)"
+                            data-id="<%= taskItem.displayTask.id %>"
+                            data-name="<%= taskItem.displayTask.name %>"
+                            data-person="<%= taskItem.displayTask.personAssisting || '' %>"
+                            data-date="<%= taskItem.displayTask.date || '' %>"
+                            data-start="<%= taskItem.displayTask.startTime || '' %>"
+                            data-end="<%= taskItem.displayTask.endTime || '' %>"
+                            data-max="<%= taskItem.displayTask.maxVolunteers %>">
+                        &#9998;
+                    </button>
+                    <form action="/tasks/remove" method="post"
+                          onsubmit="return confirm('Remove this task and all its sign-ups? This cannot be undone.')">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input type="hidden" name="taskId" value="<%= taskItem.displayTask.id %>">
+                        <button type="submit" class="btn--remove-task" title="Remove task">&times;</button>
+                    </form>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- Recurring banner -->
+            <% if (taskItem.recurring) { %>
+            <div class="recurring-banner">
+                <span class="recurring-banner__icon">&#x1f501;</span>
+                <span>Recurring <%= taskItem.recurringGroup.recurrenceTypeDisplay %> Task</span>
+                <span class="recurring-banner__count"><%= taskItem.recurringGroup.upcomingCount %> upcoming</span>
+            </div>
+            <% } %>
+
+            <!-- Labeled detail fields -->
+            <div class="task-details">
+                <div class="task-detail">
+                    <span class="task-detail__label">Person Assisting</span>
+                    <% if (taskItem.displayTask.personAssisting && taskItem.displayTask.personAssisting.trim()) { %>
+                    <span class="task-detail__value"><%= taskItem.displayTask.personAssisting %></span>
+                    <% } else { %>
+                    <span class="task-detail__value task-detail__value--empty">Not specified</span>
+                    <% } %>
+                </div>
+                <div class="task-detail">
+                    <span class="task-detail__label">Date</span>
+                    <% if (taskItem.displayTask.formattedDate) { %>
+                    <span class="task-detail__value"><%= taskItem.displayTask.formattedDate %></span>
+                    <% } else { %>
+                    <span class="task-detail__value task-detail__value--empty">Not specified</span>
+                    <% } %>
+                </div>
+                <div class="task-detail">
+                    <span class="task-detail__label">Start Time</span>
+                    <% if (taskItem.displayTask.formattedStartTime) { %>
+                    <span class="task-detail__value"><%= taskItem.displayTask.formattedStartTime %></span>
+                    <% } else { %>
+                    <span class="task-detail__value task-detail__value--empty">Not specified</span>
+                    <% } %>
+                </div>
+                <div class="task-detail">
+                    <span class="task-detail__label">End Time</span>
+                    <% if (taskItem.displayTask.formattedEndTime) { %>
+                    <span class="task-detail__value"><%= taskItem.displayTask.formattedEndTime %></span>
+                    <% } else { %>
+                    <span class="task-detail__value task-detail__value--empty">Not specified</span>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="badges">
+                <% if (taskItem.recurring) { %>
+                <span class="badge badge--count"><%= taskItem.recurringGroup.upcomingSignUpCount %> signed up (next event)</span>
+                <% if (taskItem.displayTask.maxVolunteers > 0 && !taskItem.recurringGroup.allFutureOccurrencesFull) { %>
+                <span class="badge badge--spots"><%= taskItem.displayTask.spotsRemaining %> spots left (next event)</span>
+                <% } else if (taskItem.displayTask.maxVolunteers > 0 && taskItem.recurringGroup.allFutureOccurrencesFull) { %>
+                <span class="badge badge--full">Full</span>
+                <% } %>
+                <% } else { %>
+                <span class="badge badge--count"><%= taskItem.displayTask.signUps.length %> signed up</span>
+                <% if (taskItem.displayTask.maxVolunteers > 0 && !taskItem.displayTask.full) { %>
+                <span class="badge badge--spots"><%= taskItem.displayTask.spotsRemaining %> spots left</span>
+                <% } else if (taskItem.displayTask.maxVolunteers > 0 && taskItem.displayTask.full) { %>
+                <span class="badge badge--full">Full</span>
+                <% } %>
+                <% } %>
+                <% if (taskItem.displayTask.maxVolunteers === 0) { %>
+                <span class="badge badge--unlimited">Unlimited</span>
+                <% } %>
+            </div>
+
+            <!-- Sign-up form: RECURRING (multi-select date picker) -->
+            <% if (taskItem.recurring && !taskItem.recurringGroup.allFutureOccurrencesFull) { %>
+            <div class="signup-row signup-row--recurring">
+                <form action="/signup/multiple" method="post" style="width:100%">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="signup-row__fields">
+                        <div class="form-field" style="flex:1;min-width:140px">
+                            <label class="form-label">Your Name</label>
+                            <input class="form-input" type="text" name="signUpName" placeholder="Jane Doe" required>
+                        </div>
+                        <div class="form-field" style="flex:1;min-width:180px">
+                            <label class="form-label">Your Email</label>
+                            <input class="form-input" type="email" name="signUpEmail" placeholder="jane@example.com" required>
+                        </div>
+                    </div>
+                    <div class="form-field" style="margin-top:12px">
+                        <label class="form-label">Select Dates</label>
+                        <div class="date-picker-wrapper" data-open="false">
+                            <button type="button" class="date-picker-toggle" onclick="toggleDatePicker(this)">
+                                <span class="date-picker-toggle__icon">&#128197;</span>
+                                <span class="date-picker-toggle__text">Choose dates...</span>
+                                <span class="date-picker-toggle__count date-picker-count">1 selected</span>
+                                <span class="date-picker-toggle__arrow">&#9660;</span>
+                            </button>
+                            <div class="date-picker-dropdown">
+                                <div class="date-picker-toolbar">
+                                    <span class="date-picker-toolbar__label"><%= taskItem.recurringGroup.upcomingCount %> dates available</span>
+                                    <div class="date-picker-toolbar__actions">
+                                        <button type="button" class="date-picker-toolbar__btn" onclick="selectAllDates(this)">Select All</button>
+                                        <button type="button" class="date-picker-toolbar__btn" onclick="clearAllDates(this)">Clear</button>
+                                    </div>
+                                </div>
+                                <div class="date-picker-list">
+                                    <% taskItem.recurringGroup.futureOccurrences.forEach(function(occ, occIdx) { %>
+                                    <label class="date-picker-item<%= occ.full ? ' date-picker-item--disabled' : (occIdx === 0 ? ' date-picker-item--selected' : '') %>"
+                                           data-emails="<%= (occ.signUpEmails || []).join(',') %>"
+                                           data-full="<%= occ.full %>">
+                                        <input type="checkbox" name="taskIds" value="<%= occ.id %>"
+                                               <%= (!occ.full && occIdx === 0) ? 'checked' : '' %>
+                                               <%= occ.full ? 'disabled' : '' %>>
+                                        <span class="date-picker-item__check">
+                                            <svg class="date-picker-item__check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        <span class="date-picker-item__info">
+                                            <span class="date-picker-item__week"><%= occ.recurrenceDisplayLabel || '' %></span>
+                                            <span class="date-picker-item__date"><%= occ.formattedDate || '' %></span>
+                                            <% if (occ.formattedTimeRange) { %>
+                                            <span class="date-picker-item__time"><%= occ.formattedTimeRange %></span>
+                                            <% } %>
+                                        </span>
+                                        <span class="date-picker-item__signed" style="display:none">Already signed up</span>
+                                        <% if (occ.full) { %>
+                                        <span style="margin-left:auto;color:#e74c3c;font-size:0.8em;font-weight:600;">Full</span>
+                                        <% } %>
+                                    </label>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px">
+                        <button type="submit" class="btn btn--signup">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Sign Up
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <% } %>
+
+            <!-- Sign-up form: SINGLE -->
+            <% if (!taskItem.recurring && !taskItem.displayTask.full) { %>
+            <div class="signup-row">
+                <form action="/signup" method="post" style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;width:100%">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="taskId" value="<%= taskItem.displayTask.id %>">
+                    <div class="form-field" style="flex:1;min-width:140px">
+                        <label class="form-label">Your Name</label>
+                        <input class="form-input" type="text" name="signUpName" placeholder="Jane Doe" required>
+                    </div>
+                    <div class="form-field" style="flex:1;min-width:180px">
+                        <label class="form-label">Your Email</label>
+                        <input class="form-input" type="email" name="signUpEmail" placeholder="jane@example.com" required>
+                    </div>
+                    <button type="submit" class="btn btn--signup">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Sign Up
+                    </button>
+                </form>
+            </div>
+            <% } %>
+
+            <!-- Full banner -->
+            <% var isFull = taskItem.recurring ? taskItem.recurringGroup.allFutureOccurrencesFull : taskItem.displayTask.full; %>
+            <% if (isFull) { %>
+            <div class="full-banner">All volunteer spots have been filled</div>
+            <% } %>
+
+            <!-- Volunteer list: RECURRING (all weeks) -->
+            <% if (taskItem.recurring && taskItem.recurringGroup.volunteerSummaries.length > 0) { %>
+            <div class="vol-list">
+                <button class="vol-list__toggle" type="button" aria-expanded="false" onclick="toggleVolList(this)">
+                    Volunteers &ndash; all weeks (<%= taskItem.recurringGroup.volunteerSummaries.length %>)
+                </button>
+                <div class="vol-list__items" data-open="false">
+                    <% taskItem.recurringGroup.volunteerSummaries.forEach(function(vs) { %>
+                    <div class="vol-item">
+                        <div class="vol-item__info">
+                            <span class="vol-item__name"><%= vs.name %></span>
+                            <span class="vol-item__email"><%= vs.email %></span>
+                        </div>
+                        <div class="vol-item__weeks">
+                            <% vs.occurrences.forEach(function(occ) { %>
+                            <span class="vol-item__week-badge"><%= occ.label %><% if (occ.date) { %> (<%= occ.date %>)<% } %></span>
+                            <% }); %>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- Volunteer list: SINGLE -->
+            <% if (!taskItem.recurring && taskItem.displayTask.signUps.length > 0) { %>
+            <div class="vol-list">
+                <button class="vol-list__toggle" type="button" aria-expanded="false" onclick="toggleVolList(this)">
+                    Volunteers (<%= taskItem.displayTask.signUps.length %>)
+                </button>
+                <div class="vol-list__items" data-open="false">
+                    <% taskItem.displayTask.signUps.forEach(function(signup) { %>
+                    <div class="vol-item">
+                        <div class="vol-item__info">
+                            <span class="vol-item__name"><%= signup.name %></span>
+                            <span class="vol-item__email"><%= signup.email %></span>
+                        </div>
+                        <% if (user) { %>
+                        <form action="/signup/remove" method="post">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <input type="hidden" name="taskId" value="<%= taskItem.displayTask.id %>">
+                            <input type="hidden" name="signUpId" value="<%= signup.id %>">
+                            <button type="submit" class="btn btn--ghost" title="Remove sign-up">&times;</button>
+                        </form>
+                        <% } %>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+
+        </div>
+        <% }); %>
+    </div>
+    <% } %>
+
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal__header">
+            <h2 class="modal__title">Edit Task</h2>
+            <button class="modal__close" type="button" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form action="/tasks/update" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="taskId" id="editTaskId">
+            <div class="modal__body">
+                <div class="form-grid">
+                    <div class="form-field form-field--span2">
+                        <label class="form-label">Task Name <span class="req">*</span></label>
+                        <input class="form-input" type="text" name="name" id="editName" required>
+                    </div>
+                    <div class="form-field form-field--span2">
+                        <label class="form-label">Person Assisting</label>
+                        <input class="form-input" type="text" name="personAssisting" id="editPersonAssisting">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Date</label>
+                        <input class="form-input" type="date" name="date" id="editDate">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Start Time</label>
+                        <input class="form-input" type="time" name="startTime" id="editStartTime">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">End Time</label>
+                        <input class="form-input" type="time" name="endTime" id="editEndTime">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Max Volunteers</label>
+                        <input class="form-input" type="number" name="maxVolunteers" id="editMaxVolunteers" min="0" value="0">
+                        <span class="form-hint">0 = unlimited spots</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal__actions">
+                <button type="button" class="btn btn--outline" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn btn--primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function togglePanel() {
+    var panel = document.getElementById('addPanel');
+    var isOpen = panel.getAttribute('data-open') === 'true';
+    panel.setAttribute('data-open', isOpen ? 'false' : 'true');
+}
+
+function toggleEmailPanel() {
+    var panel = document.getElementById('emailPanel');
+    var isOpen = panel.getAttribute('data-open') === 'true';
+    panel.setAttribute('data-open', isOpen ? 'false' : 'true');
+}
+
+function toggleVolList(btn) {
+    var items = btn.nextElementSibling;
+    var isOpen = items.getAttribute('data-open') === 'true';
+    items.setAttribute('data-open', isOpen ? 'false' : 'true');
+    btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+}
+
+document.querySelectorAll('.vol-list__toggle').forEach(function(btn) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'vol-list__chevron');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2.5');
+    svg.setAttribute('stroke-linecap', 'round');
+    var polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    polyline.setAttribute('points', '6 9 12 15 18 9');
+    svg.appendChild(polyline);
+    btn.appendChild(svg);
+});
+
+function toggleRecurrenceFields() {
+    var type = document.getElementById('recurrenceType').value;
+    var endField = document.getElementById('recurrenceEndDateField');
+    var endInput = document.getElementById('recurrenceEndDate');
+    if (type !== 'NONE') {
+        endField.style.display = '';
+        endInput.required = true;
+    } else {
+        endField.style.display = 'none';
+        endInput.required = false;
+        endInput.value = '';
+    }
+}
+
+function validateTaskForm(form) {
+    var recType = form.recurrenceType.value;
+    if (recType !== 'NONE') {
+        if (!form.date.value.trim()) { alert('A start date is required when creating recurring tasks.'); return false; }
+        if (!form.recurrenceEndDate.value.trim()) { alert('A repeat-until date is required when creating recurring tasks.'); return false; }
+        if (form.recurrenceEndDate.value < form.date.value) { alert('The repeat-until date must be after the start date.'); return false; }
+    }
+    var fields = [
+        { el: form.personAssisting, label: 'Person Assisting' },
+        { el: form.date,            label: 'Date' },
+        { el: form.startTime,       label: 'Start Time' },
+        { el: form.endTime,         label: 'End Time' }
+    ];
+    var missing = fields.filter(function(f) { return !f.el.value.trim(); });
+    if (missing.length > 0) {
+        var names = missing.map(function(f) { return f.label; });
+        return confirm('The following fields are not filled out:\n\n\u2022 ' + names.join('\n\u2022 ') + '\n\nAre you sure you want to add this task?');
+    }
+    return true;
+}
+
+function openEditModal(btn) {
+    document.getElementById('editTaskId').value          = btn.getAttribute('data-id')     || '';
+    document.getElementById('editName').value            = btn.getAttribute('data-name')   || '';
+    document.getElementById('editPersonAssisting').value = btn.getAttribute('data-person') || '';
+    document.getElementById('editDate').value            = btn.getAttribute('data-date')   || '';
+    document.getElementById('editStartTime').value       = btn.getAttribute('data-start')  || '';
+    document.getElementById('editEndTime').value         = btn.getAttribute('data-end')    || '';
+    document.getElementById('editMaxVolunteers').value   = btn.getAttribute('data-max')    || '0';
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+}
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEditModal();
+});
+
+function toggleDatePicker(btn) {
+    var wrapper = btn.closest('.date-picker-wrapper');
+    var isOpen = wrapper.getAttribute('data-open') === 'true';
+    document.querySelectorAll('.task-card.date-picker-elevated').forEach(function(c) { c.classList.remove('date-picker-elevated'); });
+    document.querySelectorAll('.date-picker-wrapper[data-open="true"]').forEach(function(w) { if (w !== wrapper) w.setAttribute('data-open', 'false'); });
+    wrapper.setAttribute('data-open', isOpen ? 'false' : 'true');
+    if (!isOpen) {
+        var card = wrapper.closest('.task-card');
+        if (card) card.classList.add('date-picker-elevated');
+    }
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.date-picker-wrapper')) {
+        document.querySelectorAll('.date-picker-wrapper[data-open="true"]').forEach(function(w) { w.setAttribute('data-open', 'false'); });
+        document.querySelectorAll('.task-card.date-picker-elevated').forEach(function(c) { c.classList.remove('date-picker-elevated'); });
+    }
+});
+
+function updateDatePickerCount(wrapper) {
+    var checked = wrapper.querySelectorAll('.date-picker-item input[type="checkbox"]:checked:not(:disabled)').length;
+    var countEl = wrapper.querySelector('.date-picker-count');
+    if (countEl) {
+        countEl.textContent = checked + ' selected';
+        countEl.style.display = checked > 0 ? '' : 'none';
+    }
+}
+
+function selectAllDates(btn) {
+    var wrapper = btn.closest('.date-picker-wrapper');
+    wrapper.querySelectorAll('.date-picker-item:not(.date-picker-item--disabled)').forEach(function(item) {
+        var cb = item.querySelector('input[type="checkbox"]');
+        cb.checked = true;
+        item.classList.add('date-picker-item--selected');
+    });
+    updateDatePickerCount(wrapper);
+}
+
+function clearAllDates(btn) {
+    var wrapper = btn.closest('.date-picker-wrapper');
+    wrapper.querySelectorAll('.date-picker-item:not(.date-picker-item--disabled)').forEach(function(item) {
+        var cb = item.querySelector('input[type="checkbox"]');
+        cb.checked = false;
+        item.classList.remove('date-picker-item--selected');
+    });
+    updateDatePickerCount(wrapper);
+}
+
+document.addEventListener('click', function(e) {
+    var item = e.target.closest('.date-picker-item');
+    if (!item || item.classList.contains('date-picker-item--disabled')) return;
+    if (e.target.closest('.date-picker-toolbar')) return;
+    var cb = item.querySelector('input[type="checkbox"]');
+    setTimeout(function() {
+        item.classList.toggle('date-picker-item--selected', cb.checked);
+        var wrapper = item.closest('.date-picker-wrapper');
+        if (wrapper) updateDatePickerCount(wrapper);
+    }, 0);
+});
+
+document.querySelectorAll('.date-picker-wrapper').forEach(function(w) { updateDatePickerCount(w); });
+
+(function() {
+    var debounceTimer;
+    document.addEventListener('input', function(e) {
+        if (e.target.type !== 'email' || e.target.name !== 'signUpEmail') return;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function() {
+            var emailInput = e.target;
+            var email = emailInput.value.trim().toLowerCase();
+            var form = emailInput.closest('form');
+            if (!form) return;
+            form.querySelectorAll('.date-picker-item').forEach(function(item) {
+                var emails = (item.getAttribute('data-emails') || '').toLowerCase().split(',').map(function(s) { return s.trim(); });
+                var cb = item.querySelector('input[type="checkbox"]');
+                var signedLabel = item.querySelector('.date-picker-item__signed');
+                if (email && emails.indexOf(email) !== -1) {
+                    item.classList.add('date-picker-item--disabled');
+                    item.classList.remove('date-picker-item--selected');
+                    cb.checked = false;
+                    cb.disabled = true;
+                    if (signedLabel) signedLabel.style.display = '';
+                } else if (item.getAttribute('data-full') !== 'true') {
+                    item.classList.remove('date-picker-item--disabled');
+                    cb.disabled = false;
+                    if (signedLabel) signedLabel.style.display = 'none';
+                }
+            });
+            var wrapper = form.querySelector('.date-picker-wrapper');
+            if (wrapper) updateDatePickerCount(wrapper);
+        }, 300);
+    });
+})();
+</script>
+</body>
+</html>
